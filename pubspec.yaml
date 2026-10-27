@@ -38,6 +38,10 @@ dependencies:
   carteira_design_system:
     path: packages/design_system
 
+  carteira_core:
+    path: packages/core
+  shared_preferences: ^2.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

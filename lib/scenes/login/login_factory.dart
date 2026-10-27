@@ -1,25 +1,20 @@
+import 'package:carteira_core/carteira_core.dart';
 import 'package:flutter/widgets.dart';
 
 import 'login_coordinator.dart';
 import 'login_view.dart';
 import 'login_view_model.dart';
-import 'server_login.dart';
 
-/// Assembles the login scene, injecting its dependencies into the ViewModel.
+/// Monta a cena de login, injetando as dependências no ViewModel.
 abstract final class LoginFactory {
-  static Widget make() {
+  static Widget make({
+    required AuthRepository authRepository,
+    required void Function() onLoginSuccess,
+  }) {
     final viewModel = LoginViewModel(
-      serverLogin: const DefaultServerLogin(),
-      coordinator: DefaultLoginCoordinator(),
+      authRepository: authRepository,
+      coordinator: DefaultLoginCoordinator(onLoginSuccess: onLoginSuccess),
     );
     return LoginView(viewModel: viewModel);
   }
 }
-
-/*
-   server  = Server()
-   coordinator = Coordinator()
-   viewModel = ViewModel(server, coordinator) //Injecao de dependencia
-   view = View(viewModel) //Injecao de dependencia
-   factory.make() - > View (tela pronta para uso, visual e logica)
- */

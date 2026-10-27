@@ -1,4 +1,13 @@
-/// Navigation out of the login scene. Routes are added as new scenes exist.
-abstract interface class LoginCoordinator {}
+/// Navegação para fora da cena de login.
+abstract interface class LoginCoordinator {
+  void goToHome();
+}
 
-class DefaultLoginCoordinator implements LoginCoordinator {}
+class DefaultLoginCoordinator implements LoginCoordinator {
+  const DefaultLoginCoordinator({required this.onLoginSuccess});
+
+  final void Function() onLoginSuccess;
+
+  @override
+  void goToHome() => onLoginSuccess();
+}
