@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carteira_core/carteira_core.dart';
 import 'package:carteira_design_system/carteira_design_system.dart'
     show TransactionKind;
@@ -6,6 +8,9 @@ import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'home_coordinator.dart';
 
 enum HomeStatus { loading, ready, failure }
+
+/// Filtro por tipo de lançamento, como aparece na tela.
+enum HomeFilter { all, income, expense, transfer }
 
 /// Uma linha da lista "Gastos por categoria", já pronta para exibir.
 class CategorySpending {
@@ -72,18 +77,28 @@ class HomeViewModel extends ChangeNotifier {
   String? _errorMessage;
   bool _disposed = false;
 
+  String _query = '';
+  HomeFilter _filter = HomeFilter.all;
+  Timer? _debounce;
+  int _listRequest = 0;
+
   HomeStatus get status => _status;
   String? get errorMessage => _errorMessage;
   String get userName => _authRepository.currentSession?.user.name ?? '';
   String get monthLabel => formatMonthKey(_month);
   List<CategorySpending> get categories => _categories;
   List<DayGroup> get days => _days;
+  HomeFilter get filter => _filter;
 
   String get balanceText => _money.format(_summary?.balance ?? 0);
   String get incomeText => _money.format(_summary?.income ?? 0);
   String get expenseText => _money.format(_summary?.expense ?? 0);
 
   Future<void> load() async {
+    _debounce?.cancel();
+    _listRequest++;
+    _query = '';
+    _filter = HomeFilter.all;
     _status = HomeStatus.loading;
     _notify();
 
@@ -120,10 +135,56 @@ class HomeViewModel extends ChangeNotifier {
     _notify();
   }
 
+  /// Chamado a cada letra digitada; só busca depois de uma pausa.
+  void onQueryChanged(String value) {
+    _query = value.trim();
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), _reloadList);
+  }
+
+  void onFilterChanged(HomeFilter filter) {
+    _filter = filter;
+    _notify();
+    _reloadList();
+  }
+
   Future<void> logout() async {
     await _authRepository.logout();
     _coordinator.goToLogin();
   }
+
+  /// Busca de novo só a lista, respeitando a busca e o filtro atuais.
+  Future<void> _reloadList() async {
+    final request = ++_listRequest;
+    final result = await _transactionRepository.list(
+      TransactionFilter(
+        month: _month,
+        type: _typeOf(_filter),
+        query: _query.isEmpty ? null : _query,
+        pageSize: 100,
+      ),
+    );
+    // Uma busca mais nova já foi pedida: esta resposta ficou velha.
+    if (request != _listRequest) return;
+
+    result.when(
+      ok: (page) {
+        _days = _buildDays(page.items);
+      },
+      failure: (e) {
+        _errorMessage = e.message;
+        _status = HomeStatus.failure;
+      },
+    );
+    _notify();
+  }
+
+  TransactionType? _typeOf(HomeFilter filter) => switch (filter) {
+    HomeFilter.all => null,
+    HomeFilter.income => TransactionType.income,
+    HomeFilter.expense => TransactionType.expense,
+    HomeFilter.transfer => TransactionType.transfer,
+  };
 
   /// Soma as despesas por categoria, da maior para a menor.
   List<CategorySpending> _buildCategories(Iterable<Expense> expenses) {
@@ -192,6 +253,7 @@ class HomeViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _debounce?.cancel();
     super.dispose();
   }
 }

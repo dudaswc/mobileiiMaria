@@ -58,6 +58,50 @@ class _HomeViewState extends State<HomeView> {
                     share: category.share,
                   ),
               ],
+              const Gap.xl(),
+              AppTextField(
+                key: const Key('home_search'),
+                label: 'Buscar por descrição',
+                prefixIcon: Icons.search,
+                textInputAction: TextInputAction.search,
+                onChanged: viewModel.onQueryChanged,
+              ),
+              const Gap.md(),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<HomeFilter>(
+                  key: const Key('home_filter'),
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment<HomeFilter>(
+                      value: HomeFilter.all,
+                      label: Text('Todos'),
+                    ),
+                    ButtonSegment<HomeFilter>(
+                      value: HomeFilter.income,
+                      label: Text('Receita'),
+                    ),
+                    ButtonSegment<HomeFilter>(
+                      value: HomeFilter.expense,
+                      label: Text('Despesa'),
+                    ),
+                    ButtonSegment<HomeFilter>(
+                      value: HomeFilter.transfer,
+                      label: Text('Transf.'),
+                    ),
+                  ],
+                  selected: {viewModel.filter},
+                  onSelectionChanged: (selection) =>
+                      viewModel.onFilterChanged(selection.first),
+                ),
+              ),
+              if (viewModel.days.isEmpty)
+                const SizedBox(
+                  height: 240,
+                  child: StateView.empty(
+                    message: 'Nenhum lançamento encontrado',
+                  ),
+                ),
               for (final day in viewModel.days) ...[
                 SectionHeader(title: day.heading),
                 for (final row in day.rows)
