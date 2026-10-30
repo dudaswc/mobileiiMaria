@@ -49,6 +49,15 @@ class _HomeViewState extends State<HomeView> {
                 expense: viewModel.expenseText,
                 monthLabel: viewModel.monthLabel,
               ),
+              if (viewModel.categories.isNotEmpty) ...[
+                const SectionHeader(title: 'Gastos por categoria'),
+                for (final category in viewModel.categories)
+                  CategoryBar(
+                    label: category.label,
+                    amount: category.amountText,
+                    share: category.share,
+                  ),
+              ],
             ],
           ),
         },
