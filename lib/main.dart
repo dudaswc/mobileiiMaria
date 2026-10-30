@@ -2,7 +2,7 @@ import 'package:carteira_core/carteira_core.dart';
 import 'package:carteira_design_system/carteira_design_system.dart';
 import 'package:flutter/material.dart';
 
-import 'scenes/home/home_factory.dart';
+import 'scenes/main/main_factory.dart';
 import 'scenes/login/login_factory.dart';
 import 'storage/shared_preferences_session_storage.dart';
 
@@ -79,7 +79,7 @@ class _AppRootState extends State<AppRoot> {
         authRepository: _authRepository,
         onLoginSuccess: () => setState(() => _state = _AuthState.signedIn),
       ),
-      _AuthState.signedIn => HomeFactory.make(
+      _AuthState.signedIn => MainFactory.make(
         authRepository: _authRepository,
         transactionRepository: _transactionRepository,
         onLogout: () => setState(() => _state = _AuthState.signedOut),
