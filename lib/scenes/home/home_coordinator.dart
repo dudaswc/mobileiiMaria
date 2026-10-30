@@ -1,13 +1,13 @@
-/// Navegação para fora da cena de home.
+/// Navegação e ações para fora da cena de home.
 abstract interface class HomeCoordinator {
-  void goToLogin();
+  void toggleTheme();
 }
 
 class DefaultHomeCoordinator implements HomeCoordinator {
-  const DefaultHomeCoordinator({required this.onLogout});
+  const DefaultHomeCoordinator({required this.onToggleTheme});
 
-  final void Function() onLogout;
+  final void Function() onToggleTheme;
 
   @override
-  void goToLogin() => onLogout();
+  void toggleTheme() => onToggleTheme();
 }

@@ -12,12 +12,12 @@ abstract final class MainFactory {
     required TransactionRepository transactionRepository,
     required UserRepository userRepository,
     required void Function() onLogout,
+    required void Function() onToggleTheme,
   }) {
     return MainView(
       home: HomeFactory.make(
-        authRepository: authRepository,
         transactionRepository: transactionRepository,
-        onLogout: onLogout,
+        onToggleTheme: onToggleTheme,
       ),
       profile: ProfileFactory.make(
         authRepository: authRepository,

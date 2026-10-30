@@ -27,10 +27,10 @@ class _HomeViewState extends State<HomeView> {
       title: 'Carteira',
       actions: [
         IconButton(
-          key: const Key('home_logout'),
-          icon: const Icon(Icons.logout),
-          tooltip: 'Sair',
-          onPressed: viewModel.logout,
+          key: const Key('home_theme'),
+          icon: const Icon(Icons.brightness_6_outlined),
+          tooltip: 'Alternar tema',
+          onPressed: viewModel.toggleTheme,
         ),
       ],
       body: ListenableBuilder(

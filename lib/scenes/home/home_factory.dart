@@ -8,14 +8,12 @@ import 'home_view_model.dart';
 /// Monta a cena de home, injetando as dependências no ViewModel.
 abstract final class HomeFactory {
   static Widget make({
-    required AuthRepository authRepository,
     required TransactionRepository transactionRepository,
-    required void Function() onLogout,
+    required void Function() onToggleTheme,
   }) {
     final viewModel = HomeViewModel(
-      authRepository: authRepository,
       transactionRepository: transactionRepository,
-      coordinator: DefaultHomeCoordinator(onLogout: onLogout),
+      coordinator: DefaultHomeCoordinator(onToggleTheme: onToggleTheme),
     )..load();
     return HomeView(viewModel: viewModel);
   }

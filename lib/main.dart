@@ -14,8 +14,26 @@ void main() {
   runApp(const CarteiraApp());
 }
 
-class CarteiraApp extends StatelessWidget {
+class CarteiraApp extends StatefulWidget {
   const CarteiraApp({super.key});
+
+  @override
+  State<CarteiraApp> createState() => _CarteiraAppState();
+}
+
+class _CarteiraAppState extends State<CarteiraApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  /// Alterna entre claro e escuro, partindo do que está aparecendo agora.
+  void _toggleTheme() {
+    final systemIsDark =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+        Brightness.dark;
+    final isDark =
+        _themeMode == ThemeMode.dark ||
+        (_themeMode == ThemeMode.system && systemIsDark);
+    setState(() => _themeMode = isDark ? ThemeMode.light : ThemeMode.dark);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +42,8 @@ class CarteiraApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      home: const AppRoot(),
+      themeMode: _themeMode,
+      home: AppRoot(onToggleTheme: _toggleTheme),
     );
   }
 }
@@ -33,7 +52,9 @@ enum _AuthState { checking, signedOut, signedIn }
 
 /// Decide entre Login e Home conforme haja sessão salva.
 class AppRoot extends StatefulWidget {
-  const AppRoot({super.key});
+  const AppRoot({required this.onToggleTheme, super.key});
+
+  final void Function() onToggleTheme;
 
   @override
   State<AppRoot> createState() => _AppRootState();
@@ -88,6 +109,7 @@ class _AppRootState extends State<AppRoot> {
         transactionRepository: _transactionRepository,
         userRepository: _userRepository,
         onLogout: () => setState(() => _state = _AuthState.signedOut),
+        onToggleTheme: widget.onToggleTheme,
       ),
     };
   }

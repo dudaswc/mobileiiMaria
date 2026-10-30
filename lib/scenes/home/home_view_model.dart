@@ -55,12 +55,10 @@ class DayGroup {
 /// Estado e ações da cena de home.
 class HomeViewModel extends ChangeNotifier {
   HomeViewModel({
-    required this._authRepository,
     required this._transactionRepository,
     required this._coordinator,
   });
 
-  final AuthRepository _authRepository;
   final TransactionRepository _transactionRepository;
   final HomeCoordinator _coordinator;
 
@@ -84,7 +82,6 @@ class HomeViewModel extends ChangeNotifier {
 
   HomeStatus get status => _status;
   String? get errorMessage => _errorMessage;
-  String get userName => _authRepository.currentSession?.user.name ?? '';
   String get monthLabel => formatMonthKey(_month);
   List<CategorySpending> get categories => _categories;
   List<DayGroup> get days => _days;
@@ -148,10 +145,7 @@ class HomeViewModel extends ChangeNotifier {
     _reloadList();
   }
 
-  Future<void> logout() async {
-    await _authRepository.logout();
-    _coordinator.goToLogin();
-  }
+  void toggleTheme() => _coordinator.toggleTheme();
 
   /// Busca de novo só a lista, respeitando a busca e o filtro atuais.
   Future<void> _reloadList() async {
