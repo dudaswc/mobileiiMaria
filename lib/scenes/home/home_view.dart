@@ -58,6 +58,16 @@ class _HomeViewState extends State<HomeView> {
                     share: category.share,
                   ),
               ],
+              for (final day in viewModel.days) ...[
+                SectionHeader(title: day.heading),
+                for (final row in day.rows)
+                  TransactionTile(
+                    kind: row.kind,
+                    title: row.title,
+                    subtitle: row.subtitle,
+                    amount: row.amountText,
+                  ),
+              ],
             ],
           ),
         },

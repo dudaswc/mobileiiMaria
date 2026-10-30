@@ -1,4 +1,6 @@
 import 'package:carteira_core/carteira_core.dart';
+import 'package:carteira_design_system/carteira_design_system.dart'
+    show TransactionKind;
 import 'package:flutter/foundation.dart' show ChangeNotifier;
 
 import 'home_coordinator.dart';
@@ -18,6 +20,31 @@ class CategorySpending {
 
   /// Fração do total de despesas, de 0 a 1.
   final double share;
+}
+
+/// Um lançamento da lista, já pronto para exibir.
+class TransactionRow {
+  const TransactionRow({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.amountText,
+  });
+
+  final String id;
+  final TransactionKind kind;
+  final String title;
+  final String subtitle;
+  final String amountText;
+}
+
+/// Lançamentos de um mesmo dia, com o título do grupo.
+class DayGroup {
+  const DayGroup({required this.heading, required this.rows});
+
+  final String heading;
+  final List<TransactionRow> rows;
 }
 
 /// Estado e ações da cena de home.
@@ -41,6 +68,7 @@ class HomeViewModel extends ChangeNotifier {
   HomeStatus _status = HomeStatus.loading;
   Summary? _summary;
   List<CategorySpending> _categories = const [];
+  List<DayGroup> _days = const [];
   String? _errorMessage;
   bool _disposed = false;
 
@@ -49,6 +77,7 @@ class HomeViewModel extends ChangeNotifier {
   String get userName => _authRepository.currentSession?.user.name ?? '';
   String get monthLabel => formatMonthKey(_month);
   List<CategorySpending> get categories => _categories;
+  List<DayGroup> get days => _days;
 
   String get balanceText => _money.format(_summary?.balance ?? 0);
   String get incomeText => _money.format(_summary?.income ?? 0);
@@ -59,12 +88,8 @@ class HomeViewModel extends ChangeNotifier {
     _notify();
 
     final summaryResult = await _transactionRepository.summary(_month);
-    final expensesResult = await _transactionRepository.list(
-      const TransactionFilter(
-        month: _month,
-        type: TransactionType.expense,
-        pageSize: 100,
-      ),
+    final listResult = await _transactionRepository.list(
+      const TransactionFilter(month: _month, pageSize: 100),
     );
 
     String? error;
@@ -74,7 +99,7 @@ class HomeViewModel extends ChangeNotifier {
         error = e.message;
       },
     );
-    expensesResult.when(
+    listResult.when(
       ok: (_) {},
       failure: (e) {
         error ??= e.message;
@@ -82,13 +107,14 @@ class HomeViewModel extends ChangeNotifier {
     );
 
     final summary = summaryResult.valueOrNull;
-    final expenses = expensesResult.valueOrNull;
-    if (error != null || summary == null || expenses == null) {
+    final page = listResult.valueOrNull;
+    if (error != null || summary == null || page == null) {
       _errorMessage = error ?? 'Não foi possível carregar.';
       _status = HomeStatus.failure;
     } else {
       _summary = summary;
-      _categories = _buildCategories(expenses.items);
+      _categories = _buildCategories(page.items.whereType<Expense>());
+      _days = _buildDays(page.items);
       _status = HomeStatus.ready;
     }
     _notify();
@@ -100,10 +126,10 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   /// Soma as despesas por categoria, da maior para a menor.
-  List<CategorySpending> _buildCategories(List<Transaction> expenses) {
+  List<CategorySpending> _buildCategories(Iterable<Expense> expenses) {
     final grouped = groupBy(
       expenses,
-      (Transaction t) => t.category ?? 'Sem categoria',
+      (Expense t) => t.category ?? 'Sem categoria',
     );
     final totals = {
       for (final entry in grouped.entries)
@@ -121,6 +147,43 @@ class HomeViewModel extends ChangeNotifier {
         ),
     ];
   }
+
+  /// Agrupa os lançamentos por dia, do mais recente para o mais antigo.
+  List<DayGroup> _buildDays(List<Transaction> transactions) {
+    final sorted = [...transactions]..sort((a, b) => b.date.compareTo(a.date));
+    final grouped = groupBy(sorted, (Transaction t) {
+      final local = t.date.toLocal();
+      return DateTime(local.year, local.month, local.day);
+    });
+    return [
+      for (final entry in grouped.entries)
+        DayGroup(
+          heading: formatDayHeading(entry.key),
+          rows: [for (final t in entry.value) _toRow(t)],
+        ),
+    ];
+  }
+
+  TransactionRow _toRow(Transaction t) {
+    final (kind, subtitle) = switch (t) {
+      Income() => (TransactionKind.income, _describe(t.category, t.account)),
+      Expense() => (TransactionKind.expense, _describe(t.category, t.account)),
+      Transfer(:final toAccount) => (
+        TransactionKind.transfer,
+        '${t.account} → $toAccount',
+      ),
+    };
+    return TransactionRow(
+      id: t.id,
+      kind: kind,
+      title: t.description,
+      subtitle: subtitle,
+      amountText: _money.format(t.amount),
+    );
+  }
+
+  String _describe(String? category, String account) =>
+      '${category ?? 'Sem categoria'} · $account';
 
   void _notify() {
     if (!_disposed) notifyListeners();
