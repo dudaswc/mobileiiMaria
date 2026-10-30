@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'scenes/login/login_factory.dart';
 import 'scenes/main/main_factory.dart';
+import 'scenes/transaction_detail/transaction_detail_factory.dart';
 import 'storage/shared_preferences_session_storage.dart';
 
 /// Endereço da API (porta 8080 do Codespace do servidor).
@@ -94,6 +95,21 @@ class _AppRootState extends State<AppRoot> {
     });
   }
 
+  /// Abre o detalhe por cima da Home. Devolve true se o lançamento foi
+  /// excluído, para a Home recarregar a lista.
+  Future<bool> _openTransaction(String id) async {
+    final deleted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => TransactionDetailFactory.make(
+          transactionRepository: _transactionRepository,
+          transactionId: id,
+          onClose: (deleted) => Navigator.of(context).pop(deleted),
+        ),
+      ),
+    );
+    return deleted ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return switch (_state) {
@@ -110,6 +126,7 @@ class _AppRootState extends State<AppRoot> {
         userRepository: _userRepository,
         onLogout: () => setState(() => _state = _AuthState.signedOut),
         onToggleTheme: widget.onToggleTheme,
+        onOpenTransaction: _openTransaction,
       ),
     };
   }

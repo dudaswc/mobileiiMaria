@@ -10,10 +10,14 @@ abstract final class HomeFactory {
   static Widget make({
     required TransactionRepository transactionRepository,
     required void Function() onToggleTheme,
+    required Future<bool> Function(String id) onOpenTransaction,
   }) {
     final viewModel = HomeViewModel(
       transactionRepository: transactionRepository,
-      coordinator: DefaultHomeCoordinator(onToggleTheme: onToggleTheme),
+      coordinator: DefaultHomeCoordinator(
+        onToggleTheme: onToggleTheme,
+        onOpenTransaction: onOpenTransaction,
+      ),
     )..load();
     return HomeView(viewModel: viewModel);
   }

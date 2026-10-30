@@ -147,6 +147,12 @@ class HomeViewModel extends ChangeNotifier {
 
   void toggleTheme() => _coordinator.toggleTheme();
 
+  /// Abre o detalhe; se o lançamento foi excluído lá, recarrega a lista.
+  Future<void> onTransactionTap(String id) async {
+    final deleted = await _coordinator.openTransaction(id);
+    if (deleted) await load();
+  }
+
   /// Busca de novo só a lista, respeitando a busca e o filtro atuais.
   Future<void> _reloadList() async {
     final request = ++_listRequest;

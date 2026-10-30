@@ -110,6 +110,7 @@ class _HomeViewState extends State<HomeView> {
                     title: row.title,
                     subtitle: row.subtitle,
                     amount: row.amountText,
+                    onTap: () => viewModel.onTransactionTap(row.id),
                   ),
               ],
             ],
