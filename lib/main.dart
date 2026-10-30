@@ -2,8 +2,8 @@ import 'package:carteira_core/carteira_core.dart';
 import 'package:carteira_design_system/carteira_design_system.dart';
 import 'package:flutter/material.dart';
 
-import 'scenes/main/main_factory.dart';
 import 'scenes/login/login_factory.dart';
+import 'scenes/main/main_factory.dart';
 import 'storage/shared_preferences_session_storage.dart';
 
 /// Endereço da API (porta 8080 do Codespace do servidor).
@@ -52,6 +52,10 @@ class _AppRootState extends State<AppRoot> {
   late final TransactionRepository _transactionRepository =
       RemoteTransactionRepository(client: _client);
 
+  late final UserRepository _userRepository = RemoteUserRepository(
+    client: _client,
+  );
+
   _AuthState _state = _AuthState.checking;
 
   @override
@@ -82,6 +86,7 @@ class _AppRootState extends State<AppRoot> {
       _AuthState.signedIn => MainFactory.make(
         authRepository: _authRepository,
         transactionRepository: _transactionRepository,
+        userRepository: _userRepository,
         onLogout: () => setState(() => _state = _AuthState.signedOut),
       ),
     };

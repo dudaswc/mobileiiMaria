@@ -10,6 +10,7 @@ abstract final class MainFactory {
   static Widget make({
     required AuthRepository authRepository,
     required TransactionRepository transactionRepository,
+    required UserRepository userRepository,
     required void Function() onLogout,
   }) {
     return MainView(
@@ -20,6 +21,7 @@ abstract final class MainFactory {
       ),
       profile: ProfileFactory.make(
         authRepository: authRepository,
+        userRepository: userRepository,
         onLogout: onLogout,
       ),
     );
