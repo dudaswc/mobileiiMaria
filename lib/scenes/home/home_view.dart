@@ -33,11 +33,25 @@ class _HomeViewState extends State<HomeView> {
           onPressed: viewModel.logout,
         ),
       ],
-      body: Center(
-        child: Text(
-          'Olá, ${viewModel.userName}!',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
+      body: ListenableBuilder(
+        listenable: viewModel,
+        builder: (context, _) => switch (viewModel.status) {
+          HomeStatus.loading => const StateView.loading(),
+          HomeStatus.failure => StateView.error(
+            message: viewModel.errorMessage ?? 'Não foi possível carregar.',
+            onRetry: viewModel.load,
+          ),
+          HomeStatus.ready => ListView(
+            children: [
+              BalanceCard(
+                balance: viewModel.balanceText,
+                income: viewModel.incomeText,
+                expense: viewModel.expenseText,
+                monthLabel: viewModel.monthLabel,
+              ),
+            ],
+          ),
+        },
       ),
     );
   }

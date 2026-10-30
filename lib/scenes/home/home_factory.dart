@@ -9,12 +9,14 @@ import 'home_view_model.dart';
 abstract final class HomeFactory {
   static Widget make({
     required AuthRepository authRepository,
+    required TransactionRepository transactionRepository,
     required void Function() onLogout,
   }) {
     final viewModel = HomeViewModel(
       authRepository: authRepository,
+      transactionRepository: transactionRepository,
       coordinator: DefaultHomeCoordinator(onLogout: onLogout),
-    );
+    )..load();
     return HomeView(viewModel: viewModel);
   }
 }

@@ -7,7 +7,8 @@ import 'scenes/login/login_factory.dart';
 import 'storage/shared_preferences_session_storage.dart';
 
 /// Endereço da API (porta 8080 do Codespace do servidor).
-const _baseUrl = 'https://animated-memory-5gvx6q6p6pvhq49-8080.app.github.dev';
+const _baseUrl =
+    'https://shady-spooky-hobgoblin-445p69x54xwcjwrx-8080.app.github.dev';
 
 void main() {
   runApp(const CarteiraApp());
@@ -39,10 +40,17 @@ class AppRoot extends StatefulWidget {
 }
 
 class _AppRootState extends State<AppRoot> {
+  // Um único ApiClient, compartilhado por todos os repositórios: é ele que
+  // guarda o token depois do login.
+  late final ApiClient _client = ApiClient(baseUrl: _baseUrl);
+
   late final AuthRepository _authRepository = RemoteAuthRepository(
-    client: ApiClient(baseUrl: _baseUrl),
+    client: _client,
     storage: SharedPreferencesSessionStorage(),
   );
+
+  late final TransactionRepository _transactionRepository =
+      RemoteTransactionRepository(client: _client);
 
   _AuthState _state = _AuthState.checking;
 
@@ -73,6 +81,7 @@ class _AppRootState extends State<AppRoot> {
       ),
       _AuthState.signedIn => HomeFactory.make(
         authRepository: _authRepository,
+        transactionRepository: _transactionRepository,
         onLogout: () => setState(() => _state = _AuthState.signedOut),
       ),
     };
