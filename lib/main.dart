@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'scenes/login/login_factory.dart';
 import 'scenes/main/main_factory.dart';
+import 'scenes/new_transaction/new_transaction_factory.dart';
 import 'scenes/transaction_detail/transaction_detail_factory.dart';
 import 'storage/shared_preferences_session_storage.dart';
 
@@ -110,6 +111,20 @@ class _AppRootState extends State<AppRoot> {
     return deleted ?? false;
   }
 
+  /// Abre o formulário por cima da Home. Devolve true se criou um lançamento,
+  /// para a Home recarregar a lista.
+  Future<bool> _openNewTransaction() async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => NewTransactionFactory.make(
+          transactionRepository: _transactionRepository,
+          onClose: (created) => Navigator.of(context).pop(created),
+        ),
+      ),
+    );
+    return created ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return switch (_state) {
@@ -127,6 +142,7 @@ class _AppRootState extends State<AppRoot> {
         onLogout: () => setState(() => _state = _AuthState.signedOut),
         onToggleTheme: widget.onToggleTheme,
         onOpenTransaction: _openTransaction,
+        onOpenNewTransaction: _openNewTransaction,
       ),
     };
   }

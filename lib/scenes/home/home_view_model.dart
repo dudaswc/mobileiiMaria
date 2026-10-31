@@ -153,6 +153,12 @@ class HomeViewModel extends ChangeNotifier {
     if (deleted) await load();
   }
 
+  /// Abre o formulário de novo lançamento; se criou, recarrega a lista.
+  Future<void> onAddTap() async {
+    final created = await _coordinator.openNewTransaction();
+    if (created) await load();
+  }
+
   /// Busca de novo só a lista, respeitando a busca e o filtro atuais.
   Future<void> _reloadList() async {
     final request = ++_listRequest;

@@ -11,12 +11,14 @@ abstract final class HomeFactory {
     required TransactionRepository transactionRepository,
     required void Function() onToggleTheme,
     required Future<bool> Function(String id) onOpenTransaction,
+    required Future<bool> Function() onOpenNewTransaction,
   }) {
     final viewModel = HomeViewModel(
       transactionRepository: transactionRepository,
       coordinator: DefaultHomeCoordinator(
         onToggleTheme: onToggleTheme,
         onOpenTransaction: onOpenTransaction,
+        onOpenNewTransaction: onOpenNewTransaction,
       ),
     )..load();
     return HomeView(viewModel: viewModel);

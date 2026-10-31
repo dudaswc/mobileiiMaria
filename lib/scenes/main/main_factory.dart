@@ -14,12 +14,14 @@ abstract final class MainFactory {
     required void Function() onLogout,
     required void Function() onToggleTheme,
     required Future<bool> Function(String id) onOpenTransaction,
+    required Future<bool> Function() onOpenNewTransaction,
   }) {
     return MainView(
       home: HomeFactory.make(
         transactionRepository: transactionRepository,
         onToggleTheme: onToggleTheme,
         onOpenTransaction: onOpenTransaction,
+        onOpenNewTransaction: onOpenNewTransaction,
       ),
       profile: ProfileFactory.make(
         authRepository: authRepository,

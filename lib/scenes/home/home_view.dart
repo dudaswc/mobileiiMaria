@@ -25,6 +25,12 @@ class _HomeViewState extends State<HomeView> {
 
     return AppScaffold(
       title: 'Carteira',
+      floatingActionButton: FloatingActionButton(
+        key: const Key('home_add'),
+        onPressed: viewModel.onAddTap,
+        tooltip: 'Novo lançamento',
+        child: const Icon(Icons.add),
+      ),
       actions: [
         IconButton(
           key: const Key('home_theme'),
